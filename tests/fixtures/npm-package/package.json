@@ -1,0 +1,7 @@
+{
+  "name": "npm-package",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jeldrik Hanschke",
+  "license": "MIT"
+}
