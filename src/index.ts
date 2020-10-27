@@ -1,11 +1,11 @@
 import execa, { ExecaChildProcess } from 'execa';
 import fs from 'fs-extra';
-import os from 'os';
 import path from 'path';
 import rimraf from 'rimraf';
 import { snakeCase } from 'lodash';
 import initalizeWorkspace from './lib/initialize';
 import debug from './lib/debug';
+import { merge } from 'lodash';
 
 const WORKSPACES: Map<string, string> = new Map();
 
@@ -73,16 +73,12 @@ export default class TestProject {
     return this.runCommand('yarn', cmd, ...args);
   }
 
-  async createEmberApp({ version = 'latest' } = {}): Promise<
-    ExecaChildProcess
-  > {
-    return this.installEmberProject('app', version);
+  async createEmberApp(): Promise<ExecaChildProcess> {
+    return this.installEmberProject('app');
   }
 
-  async createEmberAddon({ version = 'latest' } = {}): Promise<
-    ExecaChildProcess
-  > {
-    return this.installEmberProject('addon', version);
+  async createEmberAddon(): Promise<ExecaChildProcess> {
+    return this.installEmberProject('addon');
   }
 
   async startEmberServer(
@@ -174,22 +170,29 @@ export default class TestProject {
   async addOwnPackageAsDependency(
     packageName: string
   ): Promise<ExecaChildProcess> {
-    return this.runCommand(
-      'yarn',
-      'add',
-      `link:../../packages-under-test/${packageName}`
-    );
+    const packageVersion = this.getVersionOfPackage(packageName);
+
+    await this.modifyPackageJson({
+      dependencies: {
+        [packageName]: packageVersion,
+      },
+    });
+
+    return this.runCommand('yarn', 'install');
   }
 
   async addOwnPackageAsDevDependency(
     packageName: string
   ): Promise<ExecaChildProcess> {
-    return this.runCommand(
-      'yarn',
-      'add',
-      '--dev',
-      `link:../../packages-under-test/${packageName}`
-    );
+    const packageVersion = this.getVersionOfPackage(packageName);
+
+    await this.modifyPackageJson({
+      devDependencies: {
+        [packageName]: packageVersion,
+      },
+    });
+
+    return this.runCommand('yarn', 'install');
   }
 
   async readFile(relativeLocation: string): Promise<string> {
@@ -206,9 +209,31 @@ export default class TestProject {
     await fs.unlink(`${this.path}/${relativeLocation}`);
   }
 
+  private getVersionOfPackage(packageName: string): string {
+    return JSON.parse(
+      fs.readFileSync(
+        path.join(
+          this.#workspaceRoot,
+          'packages-under-test',
+          packageName,
+          'package.json'
+        ),
+        { encoding: 'utf-8' }
+      )
+    ).version;
+  }
+
+  private async modifyPackageJson(changes: {}): Promise<void> {
+    const packageJsonOfApp = JSON.parse(await this.readFile('package.json'));
+
+    // apply changes to content of package.json
+    merge(packageJsonOfApp, changes);
+
+    await this.writeFile('package.json', JSON.stringify(packageJsonOfApp));
+  }
+
   private async installEmberProject(
-    type: 'app' | 'addon',
-    version: string
+    type: 'app' | 'addon'
   ): Promise<ExecaChildProcess> {
     // A new ember project can not be created in an existing directory.
     // `ember init` could be used as an alternative for `ember new` in an
