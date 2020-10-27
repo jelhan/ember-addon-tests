@@ -7,7 +7,7 @@ import { snakeCase } from 'lodash';
 import initalizeWorkspace from './lib/initialize';
 import debug from './lib/debug';
 
-const workspaces: Map<string, string> = new Map();
+const WORKSPACES: Map<string, string> = new Map();
 
 async function execaLogged(
   cmd: string,
@@ -30,14 +30,14 @@ export default class TestProject {
   // ember server process if one is running
   #emberServerProcess: ExecaChildProcess | undefined;
 
-  constructor(options: { projectRoot?: string } = {}) {
+  constructor(options: { projectRoot: string }) {
     const workspaceId = JSON.stringify(options, Object.keys(options));
-    let workspaceRoot = workspaces.get(workspaceId);
+    let workspaceRoot = WORKSPACES.get(workspaceId);
 
     // ensure workspace is initalized
     if (!workspaceRoot) {
       workspaceRoot = initalizeWorkspace(options.projectRoot);
-      workspaces.set(workspaceId, workspaceRoot);
+      WORKSPACES.set(workspaceId, workspaceRoot);
       debug(`initalized workspace at ${workspaceRoot}`);
     } else {
       debug(`use existing workspace at ${workspaceRoot}`);
