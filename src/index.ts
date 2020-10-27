@@ -222,10 +222,8 @@ export default class TestProject {
     // Can not use `runEmberCommand` method cause it uses test project as
     // current working directory. But that one does not exist anymore.
     return execaLogged(
-      // TODO: Use `yarn dlx` if available (yarn v2).
-      'npx',
+      'ember',
       [
-        `ember-cli@${version}`,
         type === 'app' ? 'new' : 'addon',
         path.basename(this.path),
         '--skip-git',
@@ -234,12 +232,13 @@ export default class TestProject {
         this.path,
       ],
       {
-        // Ember CLI uses a local version installed in the workspace even
-        // if using `npx ember-cli@${version}`:
+        // Ember CLI will either use the version of itself installed in the
+        // workspace if executed within workspace root. If ember-cli package
+        // is not installed yet in the workspace, it will fallback to the
+        // Ember CLI installed globally.
+        // Some technical background could be found in this issue:
         // https://github.com/ember-cli/ember-cli/issues/9331
-        // The current working directory must be outside of the workspace
-        // to prevent these.
-        cwd: os.tmpdir(),
+        cwd: this.#workspaceRoot,
       }
     );
   }

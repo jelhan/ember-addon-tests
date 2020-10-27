@@ -174,25 +174,6 @@ describe('createEmberApp()', function () {
   it('creates a working Ember app', async function () {
     await testProject.runEmberCommand('test');
   });
-
-  it.skip('uses latest Ember CLI version by default');
-
-  it('allows to use a specific Ember CLI version', async function () {
-    const testProject = new TestProject({
-      projectRoot,
-    });
-    await testProject.createEmberApp({ version: '3.20.0' });
-    expect(
-      JSON.parse(
-        await fs.promises.readFile(
-          path.join(testProject.path, 'package.json'),
-          { encoding: 'utf-8' }
-        )
-      )
-    ).to.deep.nested.include({
-      'devDependencies.ember-cli': '~3.20.0',
-    });
-  });
 });
 
 describe('createEmberAddon()', function () {
@@ -224,25 +205,6 @@ describe('createEmberAddon()', function () {
 
   it('creates a working Ember addon', async function () {
     await testProject.runEmberCommand('test');
-  });
-
-  it.skip('uses latest Ember CLI version by default');
-
-  it('allows to use a specific Ember CLI version', async function () {
-    const testProject = new TestProject({
-      projectRoot,
-    });
-    await testProject.createEmberAddon({ version: '3.16.0' });
-    expect(
-      JSON.parse(
-        await fs.promises.readFile(
-          path.join(testProject.path, 'package.json'),
-          { encoding: 'utf-8' }
-        )
-      )
-    ).to.deep.nested.include({
-      'devDependencies.ember-cli': '~3.16.0',
-    });
   });
 });
 
