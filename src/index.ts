@@ -2,7 +2,7 @@ import execa, { ExecaChildProcess } from 'execa';
 import fs from 'fs-extra';
 import path from 'path';
 import rimraf from 'rimraf';
-import { snakeCase } from 'lodash';
+import { kebabCase } from 'lodash';
 import initalizeWorkspace from './lib/initialize';
 import debug from './lib/debug';
 import { merge } from 'lodash';
@@ -82,7 +82,7 @@ export default class TestProject {
   }
 
   async startEmberServer(
-    additionalArgs: { [key: string]: string | number } = {}
+    additionalArgs: { [key: string]: string } = {}
   ): Promise<void> {
     debug('Starting Ember development server');
 
@@ -95,7 +95,7 @@ export default class TestProject {
     const args = ['serve'];
 
     for (const [arg, value] of Object.entries(additionalArgs)) {
-      args.push(`--${snakeCase(arg)}`, value.toString());
+      args.push(`--${kebabCase(arg)}`, value);
     }
 
     this.#emberServerProcess = execa('ember', args, {
