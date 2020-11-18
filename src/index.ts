@@ -6,6 +6,7 @@ import { kebabCase } from 'lodash';
 import initalizeWorkspace from './lib/initialize';
 import debug from './lib/debug';
 import { merge } from 'lodash';
+import os from 'os';
 
 const WORKSPACES: Map<string, string> = new Map();
 
@@ -223,7 +224,9 @@ export default class TestProject {
     ).version;
   }
 
-  private async modifyPackageJson(changes: {}): Promise<void> {
+  private async modifyPackageJson(
+    changes: Record<string, unknown>
+  ): Promise<void> {
     const packageJsonOfApp = JSON.parse(await this.readFile('package.json'));
 
     // apply changes to content of package.json
@@ -258,12 +261,16 @@ export default class TestProject {
       ],
       {
         // Ember CLI will either use the version of itself installed in the
-        // workspace if executed within workspace root. If ember-cli package
-        // is not installed yet in the workspace, it will fallback to the
-        // Ember CLI installed globally.
+        // workspace if executed within workspace root. This is even true
+        // if `ember-cli` package is not installed within the workspace root
+        // but only as a dependency of some other package in the workspace.
         // Some technical background could be found in this issue:
         // https://github.com/ember-cli/ember-cli/issues/9331
-        cwd: this.#workspaceRoot,
+        // This behavior makes it less easy to predict and control which
+        // Ember CLI version is used. This issue can be avoided by running
+        // `ember new` (or `ember addon`) command outside of the workspace
+        // root.
+        cwd: os.homedir(),
       }
     );
   }
