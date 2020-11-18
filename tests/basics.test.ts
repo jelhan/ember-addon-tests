@@ -5,6 +5,8 @@ import chaiAsPromised from 'chai-as-promised';
 import path from 'path';
 import fs from 'fs';
 import fetch from 'node-fetch';
+import execa from 'execa';
+import os from 'os';
 
 chai.use(chaiFs);
 chai.use(chaiAsPromised);
@@ -149,6 +151,28 @@ describe('createEmberApp()', function () {
 
   let testProject: TestProject;
 
+  function readPackageJson(testProject: TestProject): Record<string, unknown> {
+    return JSON.parse(
+      fs.readFileSync(path.join(testProject.path, 'package.json'), {
+        encoding: 'utf-8',
+      })
+    );
+  }
+
+  function detectGlobalEmberVersion(): string {
+    const { stdout: emberVersionOutput } = execa.sync('ember', ['version'], {
+      cwd: os.homedir(),
+    });
+    const matches = emberVersionOutput.match(/ember-cli: (\d+.\d+.\d)/);
+    if (matches === null) {
+      throw `Unable to determine global Ember CLI version. 'ember version' returned ${emberVersionOutput}`;
+    }
+
+    const [, globalEmberVersion] = matches;
+    return globalEmberVersion;
+  }
+  const globalEmberVersion = detectGlobalEmberVersion();
+
   before(async function () {
     testProject = new TestProject({
       projectRoot,
@@ -159,20 +183,32 @@ describe('createEmberApp()', function () {
   it('creates an Ember app', async function () {
     expect(path.join(testProject.path, 'app')).to.be.a.directory();
     expect(path.join(testProject.path, 'addon')).to.not.be.a.path();
-    expect(
-      JSON.parse(
-        await fs.promises.readFile(
-          path.join(testProject.path, 'package.json'),
-          { encoding: 'utf-8' }
-        )
-      )
-    ).to.not.deep.include({
+    expect(readPackageJson(testProject)).to.not.deep.include({
       keywords: ['ember-addon'],
     });
   });
 
   it('creates a working Ember app', async function () {
     await testProject.runEmberCommand('test');
+  });
+
+  it('uses globally installed Ember version', async function () {
+    expect(readPackageJson(testProject).devDependencies).to.deep.include({
+      'ember-cli': `~${globalEmberVersion}`,
+    });
+  });
+
+  it('uses globally installed Ember version even if package under test in an Ember addon', async function () {
+    const testProject = new TestProject({
+      projectRoot: path.join(__dirname, 'fixtures/ember-addon'),
+    });
+    await testProject.createEmberApp();
+    await testProject.addOwnPackageAsDependency('ember-addon');
+    await testProject.runCommand('yarn', 'install');
+
+    expect(readPackageJson(testProject).devDependencies).to.deep.include({
+      'ember-cli': `~${globalEmberVersion}`,
+    });
   });
 });
 

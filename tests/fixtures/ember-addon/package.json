@@ -1,0 +1,10 @@
+{
+  "name": "ember-addon",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jeldrik Hanschke",
+  "license": "MIT",
+  "devDependencies": {
+    "ember-cli": "~3.20.0"
+  }
+}
