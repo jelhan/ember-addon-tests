@@ -1,6 +1,6 @@
 {
   "name": "ember-addon-tests",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Declarative integration tests for Ember Addons",
   "repository": {
     "type": "git",
