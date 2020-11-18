@@ -25,13 +25,20 @@ architecture utilizing [yarn workspaces](https://yarnpkg.com/features/workspaces
 
 ## Installation
 
+1. Ensure that `ember-cli` is installed globally.
+2. Install `ember-addon-tests` in your project.
+
 If using NPM:
 
 ```sh
+npm install --global ember-cli
 npm install --save-dev ember-addon-tests
 ```
 
+If using Yarn:
+
 ```sh
+yarn global add ember-cli
 yarn add --dev ember-addon-tests
 ```
 
@@ -75,6 +82,11 @@ expect(response.headers).to.include({
 // Stop Ember's development server again
 await testProject.stopEmberServer();
 ```
+
+`TestProject.createEmberApp()` and `TestProject.createEmberAddon()` methods
+use globally installed Ember CLI to create a new Ember project. They will use
+whatever Ember version is installed globally. Upgrade or downgrade globally
+installed Ember CLI to test your addon against different Ember CLI versions.
 
 ## API
 
