@@ -1,3 +1,5 @@
+# Changelog 
+
 ## v0.0.2 (2020-11-18)
 
 #### :boom: Breaking Change
@@ -12,6 +14,3 @@
 ## v0.0.1 (2020-11-04)
 
 Initial release
-
-
-# Changelog
